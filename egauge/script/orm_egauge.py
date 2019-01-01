@@ -1,98 +1,188 @@
+#!./env/bin/python3
 """
 This module defines classes for the postgresql tables that store database insertion success and readings
 and functions relating to those tables
 """
-
+from pathlib import Path #used to read db_url_config.txt in parent directory
 from sqlalchemy import create_engine
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String, Enum
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.schema import ForeignKey
 
-import csv
+# import csv
+# import enum
+import os
 
 
-#needs to be global so ORM classes can be initialized
+# needs to be in the same scope as all ORM table classes because they are subclasses of declarative_base class
 BASE = declarative_base()
-DB_URL = 'postgresql:///egauge'
+DB_URL = 'postgresql:///sensors'
 
 
-class Reading(BASE):
+class ErrorStatus:
+    """
+    This class defines strings that could be inserted into error_log.error_status
+
+    Each string represents the status of the api script execution when an error_log row was inserted
+        failure: failure to obtain readings from source or insert new readings
+        no_new_readings: successfully obtained readings from purpose but they were already in database
+        success: successfully obtained readings from purpose and inserted them into readings table
+    """
+    failure = "failure"
+    no_new_readings = "no_new_readings"
+    success = "success"
+
+
+class PipelineStage:
+    """
+    This class defines strings that could be inserted into error_log.pipeline_stage
+
+    Each string represents at what stage of the api script execution an error_log row was inserted
+        data_acquisition: attempting to obtain readings from source
+        database_insertion: attempting to insert new rows into readings table
+    """
+    data_acquisition = "data_acquisition"
+    database_insertion = "database_insertion"
+
+
+class Project(BASE):
+    """
+    This class represents the project table
+
+    Columns:
+        project_folder_path: the full path of the folder where a project's files and folders are stored
+    """
+    __tablename__ = 'project'
+
+    project_folder_path = Column(String, primary_key=True)
+
+
+class ErrorLog(BASE):
+    """
+    This class represents the error_log table
+
+    Columns:
+        id: uniquely identifies a row
+        sensor_id: foreign key to sensor table
+        latest_timestamp: the latest reading timestamp of a successful insertion attempt
+        status: represents if the request or insertion was successful
+        datetime: when an api request was called or a reading insertion was attempted
+    """
+    __tablename__ = 'error_log'
+
+    # the sqlalchemy orm requires a primary key in each table
+    log_id = Column(Integer, primary_key=True)
+    purpose_id = Column(Integer)
+    sensor_id = Column(String)
+    datetime = Column(TIMESTAMP)
+    status = Column(String)
+    # error_type = Column(String)
+    pipeline_stage = Column(String)
+
+    # def __repr__(self):
+    #     return "<ErrorLog(id='%s', timestamp='%s, is_success='%s')>" % (
+    #                          self.id, self.timestamp, self.is_success)
+
+
+class Readings(BASE):
     """
     This class represents the reading table
 
     The table contains data read by the sensor for given units of time (usually minutes)
 
     Columns:
-        reading_id: uniquely identifies a reading
-        sensor_id: a string representing the id of the egauge sensor that made the reading
-        in the form of 'egaugeXXX' with XXX representing any given egauge id #
-        timestamp: the reading's timestamp
-        units: corresponds to the column name of the reading
-        as obtained in its api request
-        reading: the numerical value of a reading
-        upload_timestamp: the time when the api request was made
+        datetime: the reading's datetime
+        purpose_id: unique id representing a purpose
+        value: the numerical value of a reading
     """
-    __tablename__ = 'reading'
+    __tablename__ = 'readings'
 
-    reading_id = Column(Integer, primary_key=True)
-    sensor_id = Column(String)
-    timestamp = Column(TIMESTAMP)
-    units = Column(String)
-    reading = Column(DOUBLE_PRECISION)
-    upload_timestamp = Column(TIMESTAMP)
+    datetime = Column(TIMESTAMP, primary_key=True)
+    purpose_id = Column(Integer, primary_key=True)
+    value = Column(DOUBLE_PRECISION)
 
 
-class DatabaseInsertionTimestamp(BASE):
+class SensorInfo(BASE):
     """
-    This class represents the database_insertion_timestamp table
+    Sources of readings
 
     Columns:
-        id: uniquely identifies a row
-        timestamp: when an api request was called or a reading insertion was attempted
-        is_success: represents if the request or insertion was successful
+        purpose_id: integer uniquely identifying a purpose
+        sensor_id: string uniquely id'ing a sensor; used in egauge and webctrl API requests; hobo sensor serial number
+            one sensor_id may have multiple purposes (egauge)
+        sensor_part: string that represents one column name in data from a sensor if one row of data has multiple readings
+        sensor_type: string representing how readings are accessed; e.g. egauge, webctrl, hobo
+        is_active: boolean representing if script should request data from a sensor
+        last_updated_datetime: postgres timestamp used to keep track of datetime of last successfully inserted reading
     """
-    __tablename__ = 'database_insertion_timestamp'
+    __tablename__ = 'sensor_info'
 
-    # the sqlalchemy orm requires a primary key in each table
-    id = Column(Integer, primary_key=True)
-    timestamp = Column(TIMESTAMP)
-    is_success = Column(Boolean)
-
-    # def __repr__(self):
-    #     return "<DatabaseInsertionTimestamp(id='%s', timestamp='%s, is_success='%s')>" % (
-    #                          self.id, self.timestamp, self.is_success)
+    purpose_id = Column(Integer, primary_key=True)
+    sensor_id = Column(String)
+    sensor_part = Column(String)
+    sensor_type = Column(String)
+    is_active = Column(Boolean)
+    last_updated_datetime = Column(TIMESTAMP)
 
 
-def setup(db_url=DB_URL):
+class ApiAuthentication(BASE):
+    """
+    User info for authentication
+
+    Currently used to connect to webctrl api
+    """
+    __tablename__ = 'api_authentication'
+
+    user_id = Column(Integer, primary_key=True)
+    username = Column(String)
+    password = Column(String)
+
+
+class ErrorLogDetails(BASE):
+    """
+    This class represents the error_log_details table that houses any extra info needed to troubleshoot script problems.
+
+    error_log_details is a long-form table.
+    It is currently used with hobo scripts to store filename, first and last reading timestamps,
+    as one hobo has multiple files, with potentially repeated names.
+    """
+    __tablename__ = 'error_log_details'
+
+    log_id = Column(Integer, primary_key=True)
+    information_type = Column(String, primary_key=True)
+    information_value = Column(String)
+
+
+def setup():
     """
     Setup tables for testing in a given database
     """
-    db = create_engine(db_url)
-    Session = sessionmaker(db)
-    session = Session()
+    # dir_path = os.path.dirname(os.path.realpath(__file__))
+    # db_url_config = str(Path(dir_path).parent.parent) + "/db_url_config.txt"
+    # with open(db_url_config, "r") as db_url_config_file:
+    #     db_url = db_url_config_file.read()
+    db = create_engine(DB_URL)
     BASE.metadata.create_all(db)
-    session.commit()
-    session.close()
 
 
-def teardown(db_url=DB_URL):
+# def teardown(, db_url=DB_URL):
+def teardown():
     """
     Drop each table that was set up for testing in a given database
     """
-    db = create_engine(db_url)
-    Reading.__table__.drop(db)
-    DatabaseInsertionTimestamp.__table__.drop(db)
+    db = create_engine(DB_URL)
+    BASE.metadata.drop_all(db)
+    # Readings.__table__.drop(db) # how to drop one table
 
-
-def export_reading_to_csv(db_url=DB_URL, output_filename='reading_dump.csv'):
-    db = create_engine(db_url)
-    Session = sessionmaker(db)
-    session = Session()
-
-    with open(output_filename, 'w') as outfile:
-        outcsv = csv.writer(outfile)
-        rows = session.query(Reading)
-        for row in rows:
-            outcsv.writerow([row.reading_id, row.sensor_id, row.timestamp, row.units, row.reading])
-    session.close()
+# def export_reading_to_csv(db_url=DB_URL, output_filename='reading_dump.csv'):
+#     db = create_engine(db_url)
+#     Session = sessionmaker(db)
+#     session = Session()
+#
+#     with open(output_filename, 'w') as outfile:
+#         outcsv = csv.writer(outfile)
+#         rows = session.query(Reading)
+#         for row in rows:
+#             outcsv.writerow([row.reading_id, row.sensor_id, row.timestamp, row.units, row.reading])
+#     session.close()
