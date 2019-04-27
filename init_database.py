@@ -26,7 +26,7 @@ if __name__ == '__main__':
         project_folder_path = os.getcwd()
 
         #write database name to config file
-        config_path = project_folder_path + 'config.txt'
+        config_path = project_folder_path + '/' + 'config.txt'
         with open(config_path, 'w+') as file:
             config_string = 'db = ' + db_name
             print(__file__ + ': writing \'' + config_string + '\' to config.txt')
