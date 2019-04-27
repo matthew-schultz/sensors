@@ -13,7 +13,10 @@ import sys
 
 
 if __name__ == '__main__':
-    # try:
+    try:
+        if len(sys.argv) != 2:
+            raise TypeError
+
         db_name = sys.argv[1]
 
         # The Linux user that will run api_...py and extract_...py scripts from the crontab
@@ -96,6 +99,7 @@ if __name__ == '__main__':
         conn.commit()
         conn.close()
 
+        print(__file__ + ': enabling file permissions')
         # create sensors group for sensors file permissions
         subprocess.run(['sudo', 'groupadd', 'sensors'])
         # make sensors primary group of current user
@@ -120,6 +124,8 @@ if __name__ == '__main__':
         # TODO if needed, grant execute file permissions on api/extract/orm scripts to locked_user
 
 
+    except TypeError as exception:
+        print('Usage: \'' + 'python3 ' + sys.argv[0] + ' <database name>\'')
     # except (sqlalchemy.exc.OperationalError, IndexError) as exception:
     #     print(__file__, exception.__class__.__name__ + ': Usage: \'' + 'python3 ' + sys.argv[0] + ' <database name>\'')
     # except:
