@@ -13,7 +13,7 @@ import sys
 
 
 if __name__ == '__main__':
-    try:
+    # try:
         db_name = sys.argv[1]
 
         # The Linux user that will run api_...py and extract_...py scripts from the crontab
@@ -96,7 +96,15 @@ if __name__ == '__main__':
         conn.commit()
         conn.close()
 
-        # grant read, write permissions for error_log files to locked_user
+        # create sensors group for sensors file permissions
+        subprocess.run(['sudo', 'groupadd', 'sensors'])
+        # make sensors primary group of current user
+        subprocess.run(['sudo', 'usermod', '-g', 'sensors', current_user])
+        subprocess.run(['sudo', 'usermod', '-g', 'sensors', locked_username])
+        # add locked user to sensors
+        # subprocess.run(['sudo', 'usermod', '-a', '-G', 'sensors', 'locked_user'])
+
+        # grant read, write permissions to locked_user
         sensor_types = ('egauge', 'hobo', 'webctrl')
         # go through each relevant subfolder in sensors
         for sensor_type in sensor_types:
@@ -106,14 +114,13 @@ if __name__ == '__main__':
                 # use subprocess to run setfacl Linux command similar to "setfacl -m user:locked_user:rw egauge/script/error.log"
                 # should grant read and write permissions for error.log file to user
                 subprocess.run(['setfacl', '-m', 'user:' + locked_username + ':rw', filename])
-            # TODO if needed, grant file permissions on */script/ directories so that locked_user can write using crontab
-            #
-            subprocess.run(['sudo chgrp sensors', sensor_type + '/script'])
+            # grant file permissions on sensor_type/script/ directories so that locked_user can write using crontab
+            subprocess.run(['sudo', 'chgrp', 'sensors', sensor_type + '/script'])
 
         # TODO if needed, grant execute file permissions on api/extract/orm scripts to locked_user
 
 
-    except (sqlalchemy.exc.OperationalError, IndexError) as exception:
-        print(__file__, exception.__class__.__name__ + ': Usage: \'' + 'python3 ' + sys.argv[0] + ' <database name>\'')
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
+    # except (sqlalchemy.exc.OperationalError, IndexError) as exception:
+    #     print(__file__, exception.__class__.__name__ + ': Usage: \'' + 'python3 ' + sys.argv[0] + ' <database name>\'')
+    # except:
+    #     print("Unexpected error:", sys.exc_info()[0])
