@@ -106,8 +106,11 @@ if __name__ == '__main__':
                 # use subprocess to run setfacl Linux command similar to "setfacl -m user:locked_user:rw egauge/script/error.log"
                 # should grant read and write permissions for error.log file to user
                 subprocess.run(['setfacl', '-m', 'user:' + locked_username + ':rw', filename])
+            # TODO if needed, grant file permissions on */script/ directories so that locked_user can write using crontab
+            # subprocess.run(
+
         # TODO if needed, grant execute file permissions on api/extract/orm scripts to locked_user
-        # TODO if needed, grant file permissions on */script/ directories so that locked_user can write using crontab
+
 
     except (sqlalchemy.exc.OperationalError, IndexError) as exception:
         print(__file__, exception.__class__.__name__ + ': Usage: \'' + 'python3 ' + sys.argv[0] + ' <database name>\'')
