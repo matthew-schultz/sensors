@@ -13,6 +13,7 @@ if __name__=='__main__':
 
     #disable old crontab tasks
     cron.remove_all()
+    print(__file__ + ': removed old jobs from database')
 
     # get db connection
     config_path = "config.txt"
