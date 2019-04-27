@@ -44,11 +44,11 @@ if __name__=='__main__':
 
         # command should cd to the appropriate */script directory, then run the script using python3 installed in virtual env
         # and outputs to crontab.txt in the */script directory
-        job = cron.new(command='cd ' + project_path + '/' + sensor_type + '/script && ' +
-                               '../../egauge/script/env/bin/' + 'python3 ' + sensor_scriptname + ' >> crontab.txt')
+        # job = cron.new(command='cd ' + project_path + '/' + sensor_type + '/script && ' +
+        #                        '../../egauge/script/env/bin/' + 'python3 ' + sensor_scriptname + ' >> crontab.txt')
 
-        #job = cron.new(command='cd ' + project_path + '/' + sensor_type + '/script && ' + \
-        #                        'python3 ' + sensor_scriptname + ' >> crontab.txt')
+        job = cron.new(command='cd ' + project_path + '/' + sensor_type + '/script && ' + \
+                               'python3 ' + sensor_scriptname + ' >> crontab.txt')
 
         # set crontab jobs to run every five minutes
         job.minute.every(5)
