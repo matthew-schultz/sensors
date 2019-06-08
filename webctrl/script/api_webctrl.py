@@ -154,7 +154,7 @@ def log_failure_to_connect_to_database(conn, exception, sensor):
 if __name__ == '__main__':
     # connect to the database
     conn = get_db_handler()
-    sensors = conn.query(orm_webctrl.SensorInfo.purpose_id, orm_webctrl.SensorInfo.query_string, orm_webctrl.SensorInfo.last_updated_datetime, orm_webctrl.SensorInfo.unit).filter_by(sensor_type=orm_webctrl.SensorInfo.SensorTypeEnum.webctrl, is_active=True)
+    sensors = conn.query(orm_webctrl.SensorInfo.purpose_id, orm_webctrl.SensorInfo.query_string, orm_webctrl.SensorInfo.last_updated_datetime, orm_webctrl.SensorInfo.unit).filter_by(script_folder=orm_webctrl.SensorInfo.ScriptFolderEnum.webctrl, is_active=True)
     for sensor in sensors:
         try:
             readings = get_data_from_api(sensor, conn)
