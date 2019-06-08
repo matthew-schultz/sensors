@@ -59,7 +59,7 @@ class SensorInfo(BASE):
 
     Columns:
         purpose_id: uniquely identifies a purpose
-        sensor_id: string used in egauge and webctrl API requests; hobo sensor serial number; one sensor_id may have multiple purposes (egauge)
+        query_string: string used in egauge and webctrl API requests; hobo sensor serial number; one query_string may have multiple purposes (egauge)
         data_sensor_info_mapping: matches full column name in raw data (egauge api data, hobo csv's, etc)
         type: string that represents one column name in data from a sensor if one row of data has multiple readings
         sensor_type: string representing source of readings; e.g. egauge, webctrl, hobo
@@ -78,7 +78,7 @@ class SensorInfo(BASE):
         webctrl = "webctrl"
 
     purpose_id = Column(Integer, primary_key=True)
-    sensor_id = Column(String)
+    query_string = Column(String)
     data_sensor_info_mapping = Column(String)
     type = Column(String)
     sensor_type = Column(Enum(SensorTypeEnum))
