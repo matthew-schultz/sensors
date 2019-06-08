@@ -31,9 +31,9 @@ class PipelineStage:
     database_insertion = "database_insertion"
 
 
-class SensorType:
+class ScriptFolder:
     """
-    This class defines strings that could be inserted into sensor_info.sensor_type
+    This class defines strings that could be inserted into sensor_info.script_folder
     """
     egauge = "egauge"
     hobo = "hobo"
@@ -80,7 +80,7 @@ class SensorInfo(BASE):
         query_string: string used in egauge and webctrl API requests; hobo sensor serial number; one query_string may have multiple purposes (egauge)
         data_sensor_info_mapping: matches full column name in raw data (egauge api data, hobo csv's, etc)
         type: string that represents one column name in data from a sensor if one row of data has multiple readings
-        sensor_type: string representing source of readings; e.g. egauge, webctrl, hobo
+        script_folder: string representing source of readings; e.g. egauge, webctrl, hobo
         is_active: boolean representing if script can request data from a sensor
         last_updated_datetime: used to keep track of datetime of last successfully inserted reading
         unit: unit of readings
@@ -91,7 +91,7 @@ class SensorInfo(BASE):
     query_string = Column(String)
     data_sensor_info_mapping = Column(String)
     type = Column(String)
-    sensor_type = Column(String)
+    script_folder = Column(String)
     is_active = Column(Boolean)
     last_updated_datetime = Column(TIMESTAMP)
     unit = Column(String)
