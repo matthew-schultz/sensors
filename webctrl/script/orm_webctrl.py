@@ -78,7 +78,7 @@ class SensorInfo(BASE):
         purpose_id: uniquely identifies a purpose
         sensor_id: string used in egauge and webctrl API requests; hobo sensor serial number; one sensor_id may have multiple purposes (egauge)
         data_sensor_info_mapping: matches full column name in raw data (egauge api data, hobo csv's, etc)
-        sensor_part: string that represents one column name in data from a sensor if one row of data has multiple readings
+        type: string that represents one column name in data from a sensor if one row of data has multiple readings
         sensor_type: string representing source of readings; e.g. egauge, webctrl, hobo
         is_active: boolean representing if script can request data from a sensor
         last_updated_datetime: used to keep track of datetime of last successfully inserted reading
@@ -89,7 +89,7 @@ class SensorInfo(BASE):
     purpose_id = Column(Integer, primary_key=True)
     sensor_id = Column(String)
     data_sensor_info_mapping = Column(String)
-    sensor_part = Column(String)
+    type = Column(String)
     sensor_type = Column(String)
     is_active = Column(Boolean)
     last_updated_datetime = Column(TIMESTAMP)
