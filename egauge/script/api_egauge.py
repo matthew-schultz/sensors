@@ -187,7 +187,7 @@ if __name__ == '__main__':
     # start the database connection
     conn = get_db_handler()
     # get a list of all unique query_string's for active egauges from sensor_info table
-    query_strings = [query_string[0] for query_string in conn.query(orm_egauge.SensorInfo.query_string).filter_by(sensor_type=orm_egauge.SensorInfo.SensorTypeEnum.egauge, is_active=True).distinct()]
+    query_strings = [query_string[0] for query_string in conn.query(orm_egauge.SensorInfo.query_string).filter_by(script_folder=orm_egauge.SensorInfo.ScriptFolderEnum.egauge, is_active=True).distinct()]
     for query_string in query_strings:
         try:
             # readings is a pandas dataframe
