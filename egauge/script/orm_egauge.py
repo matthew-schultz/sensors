@@ -83,7 +83,7 @@ class SensorInfo(BASE):
         sensor_type: string representing source of readings; e.g. egauge, webctrl, hobo
         is_active: boolean representing if script can request data from a sensor
         last_updated_datetime: used to keep track of datetime of last successfully inserted reading
-        units: unit of readings
+        unit: unit of readings
     """
     __tablename__ = 'sensor_info'
 
@@ -94,7 +94,7 @@ class SensorInfo(BASE):
     sensor_type = Column(String)
     is_active = Column(Boolean)
     last_updated_datetime = Column(TIMESTAMP)
-    units = Column(String)
+    unit = Column(String)
 
 
 class ErrorLog(BASE):
