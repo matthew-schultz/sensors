@@ -34,7 +34,7 @@ if __name__=='__main__':
             # update crontab with removal
             cron.write()
 
-    # create a list with each unique script folder
+    # create a list with each unique script folder that is not set to None
     script_folders = [stype[0] for stype in conn.query(orm_egauge.SensorInfo.script_folder).filter(orm_egauge.SensorInfo.is_active==True).distinct() if stype[0]]
     print(__file__ + ': extracted active script folders ', str(script_folders), ' from database')
 
