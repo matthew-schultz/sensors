@@ -94,6 +94,13 @@ class SensorInfo(BASE):
     is_active = Column(Boolean)
     last_updated_datetime = Column(TIMESTAMP)
     unit = Column(String)
+    building = Column(String)
+    variable_name = Column(String)
+    appliance = Column(String)
+    room = Column(String)
+    surface = Column(String)
+    sample_resolution = Column(String)
+    note = Column(String)
 
 
 class ErrorLog(BASE):
