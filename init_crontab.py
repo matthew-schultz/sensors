@@ -35,7 +35,7 @@ if __name__=='__main__':
             cron.write()
 
     # create a list with each unique script folder
-    script_folders = [stype[0] for stype in conn.query(orm_egauge.SensorInfo.script_folder).filter(orm_egauge.SensorInfo.is_active==True).distinct()]
+    script_folders = [stype[0] for stype in conn.query(orm_egauge.SensorInfo.script_folder).filter(orm_egauge.SensorInfo.is_active==True).distinct() if stype[0]]
     print(__file__ + ': extracted active script folders ', str(script_folders), ' from database')
 
     for script_folder in script_folders:
