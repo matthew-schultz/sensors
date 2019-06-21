@@ -64,7 +64,7 @@ class Reading(BASE):
 
     datetime = Column(TIMESTAMP, primary_key=True)
     purpose_id = Column(Integer, primary_key=True)
-    value = Column(DOUBLE_PRECISION)
+    reading = Column(DOUBLE_PRECISION)
     units = Column(String)
 
 
