@@ -146,7 +146,7 @@ def insert_csv_readings_into_db(conn, csv_readings, csv_metadata, csv_filename):
     if rows_returned > 0:
         for csv_reading in csv_readings.itertuples():
             for i in range(0, len(sensor_info_rows)):
-                reading_row = orm_hobo.Reading(datetime=csv_reading[1], purpose_id=sensor_info_rows[i].purpose_id, value=csv_reading[i+2], units=sensor_info_rows[i].unit)
+                reading_row = orm_hobo.Reading(datetime=csv_reading[1], purpose_id=sensor_info_rows[i].purpose_id, reading=csv_reading[i+2], units=sensor_info_rows[i].unit)
                 conn.add(reading_row)
             last_reading_row_datetime = csv_reading[1]
     #update last_updated_datetime column for relevant rows in sensor_info table
