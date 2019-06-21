@@ -51,7 +51,7 @@ class Project(BASE):
     project_folder_path = Column(String, primary_key=True)
 
 
-class Readings(BASE):
+class Reading(BASE):
     """
     This class represents the readings table
 
@@ -62,7 +62,7 @@ class Readings(BASE):
         purpose_id: unique id representing a purpose
         value: the numerical value of a reading
     """
-    __tablename__ = 'readings'
+    __tablename__ = 'reading'
 
     datetime = Column(TIMESTAMP, primary_key=True)
     purpose_id = Column(Integer, primary_key=True)
