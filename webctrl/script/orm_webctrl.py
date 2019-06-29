@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
 # from sqlalchemy.schema import ForeignKey
 
 import configparser
@@ -68,6 +69,7 @@ class Reading(BASE):
     purpose_id = Column(Integer, primary_key=True)
     reading = Column(DOUBLE_PRECISION)
     units = Column(String)
+    upload_timestamp = Column(TIMESTAMP, default=func.now())
 
 
 class SensorInfo(BASE):
