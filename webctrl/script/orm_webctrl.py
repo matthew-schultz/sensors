@@ -7,6 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import func
 # from sqlalchemy.schema import ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.types import Enum
