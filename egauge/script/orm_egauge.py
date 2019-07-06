@@ -49,8 +49,8 @@ class Reading(BASE):
 
     datetime = Column(TIMESTAMP, primary_key=True)
     purpose_id = Column(Integer, primary_key=True)
-    reading = Column(DOUBLE_PRECISION)
     units = Column(String)
+    reading = Column(DOUBLE_PRECISION)
     upload_timestamp = Column(TIMESTAMP, default=func.now())
 
 
@@ -79,20 +79,20 @@ class SensorInfo(BASE):
         webctrl = "webctrl"
 
     purpose_id = Column(Integer, primary_key=True)
-    query_string = Column(String)
-    data_sensor_info_mapping = Column(String)
-    type = Column(String)
-    script_folder = Column(Enum(ScriptFolderEnum))
-    is_active = Column(Boolean)
-    last_updated_datetime = Column(TIMESTAMP)
-    unit = Column(String)
     building = Column(String)
     variable_name = Column(String)
+    unit = Column(String)
+    type = Column(String)
     appliance = Column(String)
     room = Column(String)
     surface = Column(String)
     sample_resolution = Column(String)
+    query_string = Column(String)
     note = Column(String)
+    data_sensor_info_mapping = Column(String)
+    script_folder = Column(Enum(ScriptFolderEnum))
+    is_active = Column(Boolean)
+    last_updated_datetime = Column(TIMESTAMP)
 
 
 class ErrorLog(BASE):
