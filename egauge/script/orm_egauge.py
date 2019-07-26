@@ -49,9 +49,9 @@ class Reading(BASE):
 
     datetime = Column(TIMESTAMP, primary_key=True)
     purpose_id = Column(Integer, primary_key=True)
-    units = Column(String)
-    reading = Column(DOUBLE_PRECISION)
-    upload_timestamp = Column(TIMESTAMP, default=func.now())
+    units = Column(String, nullable=False)
+    reading = Column(DOUBLE_PRECISION, nullable=False)
+    upload_timestamp = Column(TIMESTAMP, default=func.now(), nullable=False)
 
 
 class SensorInfo(BASE):
