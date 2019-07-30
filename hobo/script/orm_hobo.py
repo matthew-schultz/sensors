@@ -125,7 +125,7 @@ class ErrorLog(BASE):
 
     # the sqlalchemy orm requires a primary key in each table
     log_id = Column(Integer, primary_key=True)
-    purpose_id = Column(Integer)
+    purpose_id = Column(Integer, ForeignKey('sensor_info.purpose_id'))
     datetime = Column(TIMESTAMP)
     was_success = Column(Boolean)
     error_type = Column(String)
@@ -142,7 +142,7 @@ class ErrorLogDetails(BASE):
     """
     __tablename__ = 'error_log_details'
 
-    log_id = Column(Integer, primary_key=True)
+    log_id = Column(Integer, ForeignKey('error_log.log_id'), primary_key=True)
     information_type = Column(String, primary_key=True)
     information_value = Column(String)
 
