@@ -12,8 +12,11 @@ from sqlalchemy.orm import sessionmaker
 # import json #used if we want to output json file
 import configparser
 import logging
-import orm_webctrl
 import os
+parent_directory = os.path.abspath(os.path.join((os.path.join(os.path.join(__file__, os.pardir), os.pardir)), os.pardir))
+import sys
+sys.path.append(parent_directory)
+import orm_lonoa
 import pendulum
 import requests
 
@@ -60,7 +63,7 @@ def get_data_from_api(sensor, conn):
     if not sensor.last_updated_datetime:
         raise Exception('No last_updated_datetime found')
     #get webctrl user information
-    webctrl_user_row = conn.query(orm_webctrl.ApiAuthentication.username, orm_webctrl.ApiAuthentication.password).first()
+    webctrl_user_row = conn.query(orm_lonoa.ApiAuthentication.username, orm_lonoa.ApiAuthentication.password).first()
     # returns a TypeError if there are no users in database
     api_user = webctrl_user_row[0]
     api_pass = webctrl_user_row[1]
@@ -76,7 +79,7 @@ def get_data_from_api(sensor, conn):
     readings = requests.post(host, params=params, auth=tuple(auth))
     if readings.status_code == requests.codes.ok:
         print('API request was successful' + str(readings))
-        error_log_row = orm_webctrl.ErrorLog(datetime=current_time, was_success=True, purpose_id=sensor.purpose_id, pipeline_stage=orm_webctrl.ErrorLog.PipelineStageEnum.data_acquisition)
+        error_log_row = orm_lonoa.ErrorLog(datetime=current_time, was_success=True, purpose_id=sensor.purpose_id, pipeline_stage=orm_lonoa.ErrorLog.PipelineStageEnum.data_acquisition)
         conn.add(error_log_row)
         conn.commit()
         return readings
@@ -118,7 +121,7 @@ def insert_readings_into_database(conn, readings, sensor):
                 reading_value = reading[key]
         # subtract 10 hours from reading time for comparison because it's GMT and last_updated_datetime is GMT - 10
         if reading_time.subtract(hours=10) > pendulum.instance(sensor.last_updated_datetime):
-            reading_row = orm_webctrl.Reading(purpose_id=sensor.purpose_id, datetime=reading_time, reading=reading_value, units=sensor.unit, upload_timestamp=current_time)
+            reading_row = orm_lonoa.Reading(purpose_id=sensor.purpose_id, datetime=reading_time, reading=reading_value, units=sensor.unit, upload_timestamp=current_time)
             conn.add(reading_row)
             rows_inserted += 1
             new_last_updated_datetime = reading_time
@@ -126,9 +129,9 @@ def insert_readings_into_database(conn, readings, sensor):
     # with open("output.txt", 'w') as outfile:
     #     json.dump(sensor_json_data, outfile, indent=4)
     if new_last_updated_datetime:
-        conn.query(orm_webctrl.SensorInfo).filter(orm_webctrl.SensorInfo.purpose_id == sensor.purpose_id).update(
+        conn.query(orm_lonoa.SensorInfo).filter(orm_lonoa.SensorInfo.purpose_id == sensor.purpose_id).update(
             {"last_updated_datetime": new_last_updated_datetime})
-    error_log_row = orm_webctrl.ErrorLog(datetime=current_time, was_success=True, purpose_id=sensor.purpose_id, pipeline_stage=orm_webctrl.ErrorLog.PipelineStageEnum.database_insertion)
+    error_log_row = orm_lonoa.ErrorLog(datetime=current_time, was_success=True, purpose_id=sensor.purpose_id, pipeline_stage=orm_lonoa.ErrorLog.PipelineStageEnum.database_insertion)
     conn.add(error_log_row)
     conn.commit()
     print(rows_inserted, ' row(s) inserted')
@@ -139,7 +142,7 @@ def log_failure_to_connect_to_api(conn, exception, sensor):
     current_time = pendulum.now('Pacific/Honolulu')
     current_time = current_time.set(microsecond=current_time.microsecond - (current_time.microsecond % 10000))
     logging.exception('log_failure_to_connect_to_api')
-    error_log_row = orm_webctrl.ErrorLog(datetime=current_time, error_type=exception.__class__.__name__, pipeline_stage=orm_webctrl.ErrorLog.PipelineStageEnum.data_acquisition, purpose_id=sensor.purpose_id, was_success=False)
+    error_log_row = orm_lonoa.ErrorLog(datetime=current_time, error_type=exception.__class__.__name__, pipeline_stage=orm_lonoa.ErrorLog.PipelineStageEnum.data_acquisition, purpose_id=sensor.purpose_id, was_success=False)
     conn.add(error_log_row)
     conn.commit()
 
@@ -151,7 +154,7 @@ def log_failure_to_connect_to_database(conn, exception, sensor):
     current_time = pendulum.now('Pacific/Honolulu')
     current_time = current_time.set(microsecond=current_time.microsecond - (current_time.microsecond % 10000))
     logging.exception('log_failure_to_connect_to_database')
-    error_log_row = orm_webctrl.ErrorLog(datetime=current_time, error_type=exception.__class__.__name__, pipeline_stage=orm_webctrl.ErrorLog.PipelineStageEnum.database_insertion, purpose_id=sensor.purpose_id, was_success=False)
+    error_log_row = orm_lonoa.ErrorLog(datetime=current_time, error_type=exception.__class__.__name__, pipeline_stage=orm_lonoa.ErrorLog.PipelineStageEnum.database_insertion, purpose_id=sensor.purpose_id, was_success=False)
     conn.add(error_log_row)
     conn.commit()
 
@@ -159,7 +162,7 @@ def log_failure_to_connect_to_database(conn, exception, sensor):
 if __name__ == '__main__':
     # connect to the database
     conn = get_db_handler()
-    sensors = conn.query(orm_webctrl.SensorInfo.purpose_id, orm_webctrl.SensorInfo.query_string, orm_webctrl.SensorInfo.last_updated_datetime, orm_webctrl.SensorInfo.unit).filter_by(script_folder=orm_webctrl.SensorInfo.ScriptFolderEnum.webctrl, is_active=True)
+    sensors = conn.query(orm_lonoa.SensorInfo.purpose_id, orm_lonoa.SensorInfo.query_string, orm_lonoa.SensorInfo.last_updated_datetime, orm_lonoa.SensorInfo.unit).filter_by(script_folder=orm_lonoa.SensorInfo.ScriptFolderEnum.webctrl, is_active=True)
     for sensor in sensors:
         try:
             readings = get_data_from_api(sensor, conn)
