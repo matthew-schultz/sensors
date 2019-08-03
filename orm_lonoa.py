@@ -170,7 +170,7 @@ def setup():
     """
     Use defined classes to create tables in the database named in config file
     """
-    config_path = str(Path(os.path.dirname(os.path.realpath(__file__))).parent.parent) + "/config.txt"
+    config_path = str(Path(os.path.dirname(os.path.realpath(__file__)))) + "/config.txt"
     with open(config_path, "r") as file:
         #prepend '[DEFAULT]\n' since ConfigParser requires section headers in config files
         config_string = '[DEFAULT]\n' + file.read()
@@ -185,7 +185,7 @@ def teardown():
     """
     Drop all tables in the database named in config file
     """
-    config_path = str(Path(os.path.dirname(os.path.realpath(__file__))).parent.parent) + "/config.txt"
+    config_path = str(Path(os.path.dirname(os.path.realpath(__file__)))) + "/config.txt"
     with open(config_path, "r") as file:
         #prepend '[DEFAULT]\n' since ConfigParser requires section headers in config files
         config_string = '[DEFAULT]\n' + file.read()
