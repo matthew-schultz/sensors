@@ -76,6 +76,7 @@ if __name__=='__main__':
             script_filename = job_string.split('python3 ')[1].split()[0]
             # extract the interval of minutes when crontab runs
             script_minutes = int(job_string.split()[0].split('/')[1])
+
             # remove job from crontab if it is not active in database or if interval of minutes has been updated
             if script_filename not in database_active_scripts or script_minutes != args.min:
                 print(__file__ + ': removing job \"' + job_string + "\"")
@@ -98,7 +99,7 @@ if __name__=='__main__':
             # and write outputs to crontab.txt in the */script directory
             script_folder = script_name.split('_')[1].split('.py')[0]
             job = cron.new(command='cd ' + project_path + '/' + script_folder + '/script && '
-                                   + 'python3 ' + script_name + ' >> crontab.txt')
+                                   + 'python3 ' + script_name)
         # schedule init_crontab job if not already scheduled
         else:
             job = cron.new(command='cd ' + project_path + '/ && python3 ' + str(script_name) + ' --min=' + str(args.min))
